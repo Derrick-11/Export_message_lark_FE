@@ -18,7 +18,7 @@ export default function Sidebar() {
           <span className="text-2xl">👤</span>
         </div>
         <h3 className="mt-3 font-semibold text-lg">LARKSUITE</h3>
-        <p className="text-sm text-gray-300">Derrick</p>
+        <p className="text-sm text-gray-300">Admin</p>
       </div>
 
       {/* Menu List */}

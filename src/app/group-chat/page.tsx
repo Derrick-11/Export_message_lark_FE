@@ -49,8 +49,14 @@ export default function ManageGroupChat() {
         startTime,
         endTime,
       };
-      await LarkSuiteService.exportMessageLark(data);
-      alert("Xuất Excel thành công!");
+      const response = await LarkSuiteService.exportMessageLark(data);
+
+      if (response.status === 201) {
+        window.open(response.data.sheetUrl, "_blank");
+        alert("Xuất dữ liệu tin nhắn trong nhóm thành công!");
+      } else {
+        alert("Xuất dữ liệu tin nhắn trong nhóm thất bại!");
+      }
     } catch (err) {
       console.error("Lỗi xuất Excel:", err);
       alert("Xuất Excel thất bại!");
