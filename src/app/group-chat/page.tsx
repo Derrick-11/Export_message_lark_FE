@@ -3,10 +3,17 @@ import { LarkSuiteService } from "@/service/api.service";
 import { useEffect, useState } from "react";
 import { FaFileExcel } from "react-icons/fa";
 import { Chat } from "../interfaces/chat";
+import ExportModal from "./components/popupSelectTime";
 
 export default function ManageGroupChat() {
   const [filter, setFilter] = useState("");
   const [groups, setGroups] = useState<Chat[]>([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -20,13 +27,36 @@ export default function ManageGroupChat() {
     fetchGroups();
   }, []);
 
-  const handleExport = async (chatId: string) => {
+  const openModal = (chatId: string) => {
+    setSelectedChatId(chatId);
+    setShowModal(true);
+    setStartTime("");
+    setEndTime("");
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedChatId(null);
+  };
+
+  const handleExport = async () => {
+    if (!selectedChatId) return;
+    setLoading(true);
+
     try {
-      await LarkSuiteService.exportMessageLark(chatId);
+      const data = {
+        chatId: selectedChatId,
+        startTime,
+        endTime,
+      };
+      await LarkSuiteService.exportMessageLark(data);
       alert("Xuất Excel thành công!");
     } catch (err) {
       console.error("Lỗi xuất Excel:", err);
       alert("Xuất Excel thất bại!");
+    } finally {
+      setLoading(false);
+      closeModal();
     }
   };
 
@@ -35,27 +65,31 @@ export default function ManageGroupChat() {
   );
 
   return (
-    <div style={{ padding: "20px", color: "#fff" }}>
-      <h1>Quản lý nhóm chat</h1>
+    <div
+      style={{
+        padding: "20px",
+        height: "100vh",
+        backgroundColor: "#0662a9ff",
+        color: "#fff",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <h1 style={{ marginBottom: "20px" }}>Danh sách nhóm chat</h1>
 
-      {/* Filter */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Tìm kiếm nhóm..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          style={{
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-            width: "250px",
-            color: "#000",
-          }}
-        />
-      </div>
+      <input
+        type="text"
+        placeholder="Tìm kiếm nhóm..."
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        style={{
+          padding: "8px",
+          marginBottom: "20px",
+          borderRadius: "4px",
+          border: "1px solid #ccc",
+          width: "300px",
+        }}
+      />
 
-      {/* Table */}
       <table
         style={{
           borderCollapse: "collapse",
@@ -65,38 +99,29 @@ export default function ManageGroupChat() {
       >
         <thead>
           <tr style={{ background: "#103f66" }}>
-            <th style={{ border: "1px solid #ccc" }}>STT</th>
-            <th style={{ border: "1px solid #ccc" }}>Ảnh đại diện</th>
-            <th style={{ border: "1px solid #ccc" }}>Tên nhóm</th>
-            <th style={{ border: "1px solid #ccc" }}>Thao tác</th>
+            <th style={thStyle}>STT</th>
+            <th style={thStyle}>Ảnh đại diện</th>
+            <th style={thStyle}>Tên nhóm</th>
+            <th style={thStyle}>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {filteredData.map((chat, index) => (
             <tr key={chat.chat_id}>
-              <td style={{ ...tdStyle, justifyItems: "center" }}>
-                <p> {index + 1}</p>
-              </td>
-              <td
-                style={{
-                  ...tdStyle,
-                  justifyItems: "center",
-                }}
-              >
+              <td style={tdStyle}>{index + 1}</td>
+              <td style={tdStyle}>
                 <img
                   src={chat.avatar}
                   alt="avatar"
                   style={{ width: 40, height: 40, borderRadius: "50%" }}
                 />
               </td>
-              <td style={{ ...tdStyle, justifyItems: "center" }}>
-                <p>{chat.name}</p>
-              </td>
-              <td style={{ ...tdStyle, justifyItems: "center" }}>
+              <td style={tdStyle}>{chat.name}</td>
+              <td style={tdStyle}>
                 <FaFileExcel
                   size={20}
                   style={{ cursor: "pointer", color: "#21a366" }}
-                  onClick={() => handleExport(chat.chat_id)}
+                  onClick={() => openModal(chat.chat_id)}
                   title="Xuất tin nhắn ra Excel"
                 />
               </td>
@@ -104,6 +129,18 @@ export default function ManageGroupChat() {
           ))}
         </tbody>
       </table>
+
+      {showModal && (
+        <ExportModal
+          startTime={startTime}
+          endTime={endTime}
+          onStartTimeChange={setStartTime}
+          onEndTimeChange={setEndTime}
+          onClose={closeModal}
+          onExport={handleExport}
+          loading={loading}
+        />
+      )}
     </div>
   );
 }
@@ -111,4 +148,12 @@ export default function ManageGroupChat() {
 const tdStyle = {
   border: "1px solid #ccc",
   padding: "10px",
+  textAlign: "center" as const,
+};
+
+const thStyle = {
+  border: "1px solid #ccc",
+  padding: "10px",
+  fontWeight: "bold",
+  textAlign: "center" as const,
 };
