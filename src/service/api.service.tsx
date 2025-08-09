@@ -16,7 +16,7 @@ export const LarkSuiteService = {
     const response = await api.get("/lark");
     return response.data;
   },
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exportMessageLark: async (groupData: any) => {
     const response = await api.post("/lark", groupData, {
       responseType: "blob",

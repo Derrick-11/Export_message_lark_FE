@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface ExportModalProps {
   startTime: string;
   endTime: string;
@@ -17,6 +19,17 @@ export default function ExportModal({
   onExport,
   loading = false,
 }: ExportModalProps) {
+  const [error, setError] = useState<string>("");
+
+  const handleExport = () => {
+    if (new Date(endTime) < new Date(startTime)) {
+      setError("Đến ngày phải lớn hơn hoặc bằng Từ ngày");
+      return;
+    }
+    setError("");
+    onExport();
+  };
+
   return (
     <div style={modalOverlayStyle}>
       <div style={modalStyle}>
@@ -27,7 +40,10 @@ export default function ExportModal({
           <input
             type="datetime-local"
             value={startTime}
-            onChange={(e) => onStartTimeChange(e.target.value)}
+            onChange={(e) => {
+              onStartTimeChange(e.target.value);
+              if (error) setError("");
+            }}
             style={inputStyle}
             disabled={loading}
           />
@@ -38,14 +54,25 @@ export default function ExportModal({
           <input
             type="datetime-local"
             value={endTime}
-            onChange={(e) => onEndTimeChange(e.target.value)}
+            onChange={(e) => {
+              onEndTimeChange(e.target.value);
+              if (error) setError("");
+            }}
             style={inputStyle}
             disabled={loading}
           />
         </label>
 
+        {error && (
+          <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+        )}
+
         <div style={buttonGroupStyle}>
-          <button onClick={onExport} style={buttonPrimary} disabled={loading}>
+          <button
+            onClick={handleExport}
+            style={buttonPrimary}
+            disabled={loading}
+          >
             {loading ? "Đang xuất..." : "Xuất Excel"}
           </button>
           <button onClick={onClose} style={buttonSecondary} disabled={loading}>

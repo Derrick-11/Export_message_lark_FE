@@ -76,20 +76,6 @@ export default function ManageGroupChat() {
     >
       <h1 style={{ marginBottom: "20px" }}>Danh sách nhóm chat</h1>
 
-      <input
-        type="text"
-        placeholder="Tìm kiếm nhóm..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        style={{
-          padding: "8px",
-          marginBottom: "20px",
-          borderRadius: "4px",
-          border: "1px solid #ccc",
-          width: "300px",
-        }}
-      />
-
       <table
         style={{
           borderCollapse: "collapse",
